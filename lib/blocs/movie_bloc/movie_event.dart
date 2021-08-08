@@ -14,11 +14,11 @@ class InitialEvent extends MovieEvent {
 
 /// add movie to favorite list
 class MovieFavoriteTriggeredEvent extends MovieEvent {
-  const MovieFavoriteTriggeredEvent({required this.movieId});
-  final int movieId;
+  const MovieFavoriteTriggeredEvent({required this.movie});
+  final Movie movie;
 
   @override
-  List<Object?> get props => <int>[movieId];
+  List<Object?> get props => <dynamic>[movie];
 }
 
 class MovieLoadPopularEvent extends MovieEvent {

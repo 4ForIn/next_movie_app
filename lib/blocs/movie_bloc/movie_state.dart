@@ -19,7 +19,12 @@ class MovieLoadingInProgress extends MovieState {
 }
 
 class MovieLoaded extends MovieState {
-  const MovieLoaded({required this.foundMovies, required this.popularMovies});
+  const MovieLoaded(
+      {required this.favoriteMovies,
+      required this.foundMovies,
+      required this.popularMovies});
+
+  final List<Movie> favoriteMovies;
   final List<Movie> popularMovies;
   final List<Movie> foundMovies;
 
@@ -28,15 +33,20 @@ class MovieLoaded extends MovieState {
     return 'MovieLoaded{popularMovies: $popularMovies, foundMovies.posterPath: $foundMovies}';
   }
 
-  /*MovieLoaded copyWith({List<Movie> foundMovies, List<Movie> popularMovies}) {
+  MovieLoaded copyWith(
+      {List<Movie>? favoriteMovies,
+      List<Movie>? foundMovies,
+      List<Movie>? popularMovies}) {
     return MovieLoaded(
+      favoriteMovies: favoriteMovies ?? this.favoriteMovies,
       foundMovies: foundMovies ?? this.foundMovies,
       popularMovies: popularMovies ?? this.popularMovies,
     );
-  }*/
+  }
 
   @override
-  List<Object?> get props => <List<Movie>>[foundMovies, popularMovies];
+  List<Object?> get props =>
+      <List<Movie>>[favoriteMovies, foundMovies, popularMovies];
 }
 
 /// Failure handling
@@ -49,10 +59,10 @@ class MovieError extends MovieState {
   List<Object?> get props => <dynamic>[errorCode, errorMessage];
 }
 
-class MovieFavoriteLoaded extends MovieState {
+/*class MovieFavoriteLoaded extends MovieState {
   const MovieFavoriteLoaded(this.favoriteMovies);
   final List<Movie> favoriteMovies;
 
   @override
   List<Object?> get props => <List<Movie>>[favoriteMovies];
-}
+}*/

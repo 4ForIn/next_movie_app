@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AppBlocObserver extends BlocObserver {
-  /*@override
+  /* @override
   void onChange(BlocBase bloc, Change change) {
     // ignore: avoid_print
     //print(change);

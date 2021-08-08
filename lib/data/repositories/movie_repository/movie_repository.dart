@@ -1,10 +1,12 @@
 import 'package:next_movie_app/data/models/movie/movie.dart';
 import 'package:next_movie_app/data/providers/movie_api_provider/movie_api_provider.dart';
+import 'package:next_movie_app/data/repositories/app_repository/app_repository.dart';
 
 /// Data Provider wrapper
-class MovieRepository {
+class MovieRepository implements AppMovieRepository {
   final MovieApiProvider moviesApiProvider = MovieApiProvider();
 
+  @override
   Future<List<Movie>> fetchMovies([String? title]) async {
     final List<Movie> _movies = <Movie>[];
     final dynamic _jsonStringFromDataProvider =
