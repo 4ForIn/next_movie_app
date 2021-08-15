@@ -17,7 +17,7 @@ class MoviesListView extends StatelessWidget {
     return Expanded(
       child: ListView.builder(
         shrinkWrap: true,
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(7.0),
         itemCount: movieItems.length,
         itemBuilder: (BuildContext context, int index) {
           return MovieCard(

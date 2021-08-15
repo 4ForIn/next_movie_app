@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:next_movie_app/config/themes/app_themes.dart';
 import 'package:next_movie_app/utils/constants/router_strings/router_strings.dart';
 
 class BottomNav extends StatefulWidget {
@@ -30,6 +31,9 @@ class _BottomNavState extends State<BottomNav> {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
+      backgroundColor: Theme.of(context).bottomAppBarColor,
+      selectedItemColor: AppThemes.darkSecondaryColor,
+      unselectedItemColor: AppThemes.darkSecondaryColor,
       // currentIndex: _selectedIndex,
       onTap: _onItemTapped,
       items: const <BottomNavigationBarItem>[

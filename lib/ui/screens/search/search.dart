@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:next_movie_app/blocs/movie_bloc/movie_bloc.dart';
 import 'package:next_movie_app/data/models/movie/movie.dart';
-import 'package:next_movie_app/ui/widgets/movies_list_view/movies_list_view.dart';
-import 'package:next_movie_app/utils/constants/router_strings/router_strings.dart';
+import 'package:next_movie_app/ui/widgets/movie_card/movie_card.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -15,58 +14,95 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: Container(
-        color: Colors.grey.shade400,
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: <Widget>[
-            _buildSearchFieldAndBtn(context),
-            const Divider(
-              height: 5.0,
-              indent: 40.0,
-              endIndent: 40.0,
-            ),
-            BlocBuilder<MovieBloc, MovieState>(
-              builder: (BuildContext context, MovieState state) {
-                if (state is MovieInitial) {
-                  return const Text('See results below');
-                } else if (state is MovieLoaded &&
-                    state.foundMovies.isNotEmpty) {
-                  return MoviesListView(
-                    movieItems: state.foundMovies,
-                    fn: (Movie m) {
-                      context
-                          .read<MovieBloc>()
-                          .add(MovieFavoriteTriggeredEvent(movie: m));
-                    },
-                  );
-                } else {
-                  return const Text('nothing was found');
-                }
-              },
-            ),
-          ],
-        ),
+  SliverAppBar _buildSliverAppBar(BuildContext context) {
+    return SliverAppBar(
+      backgroundColor: Theme.of(context).backgroundColor,
+      elevation: 8.0,
+      forceElevated: true,
+      shadowColor: Theme.of(context).secondaryHeaderColor,
+      title: _buildAppBarTitle(context),
+    );
+  }
+
+  Text _buildAppBarTitle(BuildContext context) {
+    return Text(
+      'Search movie',
+      style: TextStyle(
+        color: Theme.of(context).textTheme.headline6!.color,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
       ),
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      leading: MaterialButton(
-        onPressed: () {
-          /* */
-          Navigator.pushNamed(context, RouterStrings.homeRoute);
-        },
-        child: const Icon(Icons.home),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: CustomScrollView(
+        semanticChildCount: 0,
+        slivers: <Widget>[
+          _buildSliverAppBar(context),
+          SliverList(
+            delegate: SliverChildListDelegate(<Widget>[
+              Container(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(children: <Widget>[
+                  _buildSearchFieldAndBtn(context),
+                  const Divider(
+                    height: 5.0,
+                    indent: 40.0,
+                    endIndent: 40.0,
+                  ),
+                ]),
+              )
+            ]),
+          ),
+          BlocBuilder<MovieBloc, MovieState>(
+              builder: (BuildContext context, MovieState state) {
+            if (state is MovieInitial) {
+              return SliverList(
+                delegate: SliverChildListDelegate(<Widget>[
+                  const Center(
+                    child: Text(
+                      'Type a title to start searching',
+                    ),
+                  ),
+                ]),
+              );
+            } else if (state is MovieLoaded && state.foundMovies.isNotEmpty) {
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return MovieCard(
+                      item: state.foundMovies[index],
+                      fn1: (Movie m) {
+                        context
+                            .read<MovieBloc>()
+                            .add(MovieFavoriteTriggeredEvent(movie: m));
+                      },
+                    );
+                  },
+                  childCount: 7,
+                ),
+              );
+            } else {
+              return SliverList(
+                delegate: SliverChildListDelegate(<Widget>[
+                  const Center(
+                    child: Text(
+                      'nothing was found',
+                    ),
+                  ),
+                ]),
+              );
+            }
+          }),
+        ],
       ),
-      title: const Text('Search movie'),
     );
   }
+
+  /// build methods:
 
   Row _buildSearchFieldAndBtn(BuildContext context) {
     return Row(
@@ -76,9 +112,16 @@ class _SearchScreenState extends State<SearchScreen> {
           child: BlocBuilder<MovieBloc, MovieState>(
             builder: (BuildContext context, MovieState state) {
               return TextField(
-                // ignore: always_specify_types
+                autofocus: true,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyText1?.color ??
+                      const Color(0xFF063852),
+                ),
+                decoration: const InputDecoration(
+                  hintText: 'Title',
+                  // hintStyle: TextStyle(color: Colors.white),
+                ),
                 onChanged: (String input) =>
-                    // ignore: always_specify_types
                     {context.read<MovieBloc>().add(MovieSearchEvent(input))},
                 controller: _controller,
               );
@@ -87,11 +130,7 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         Expanded(
           flex: 2,
-          child: MaterialButton(
-            onPressed: () => _searchHandle(context),
-            color: Colors.green,
-            child: const Text('Search'),
-          ),
+          child: _buildSearchBtn(context),
         ),
       ],
     );
@@ -103,5 +142,27 @@ class _SearchScreenState extends State<SearchScreen> {
     if (!validate.contains(v)) {
       context.read<MovieBloc>().add(MovieSearchEvent(_controller.value.text));
     }
+  }
+
+  Container _buildSearchBtn(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: <Color>[
+              Theme.of(context).accentColor,
+              Theme.of(context).buttonColor,
+            ]),
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: TextButton(
+        onPressed: () => _searchHandle(context),
+        child: const Text(
+          'Search',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
   }
 }

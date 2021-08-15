@@ -12,9 +12,12 @@ class MovieCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool favorite = item.isFavored;
     return ExpansionTile(
+      collapsedTextColor:
+          Theme.of(context).textTheme.bodyText1?.color ?? Colors.green,
+      textColor: Theme.of(context).textTheme.bodyText1?.color ?? Colors.green,
       leading: IconButton(
         icon: favorite ? const Icon(Icons.star) : const Icon(Icons.star_border),
-        color: favorite ? Colors.red.shade300 : Colors.grey.shade700,
+        color: favorite ? Colors.red.shade300 : Theme.of(context).accentColor,
         onPressed: () => fn1(item),
       ),
       title: Container(
@@ -45,6 +48,10 @@ class MovieCard extends StatelessWidget {
                       padding: const EdgeInsets.all(10.0),
                       child: Text(
                         item.title,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.subtitle1?.color ??
+                              const Color(0xFFF0810F),
+                        ),
                         maxLines: 10,
                       ),
                     ),
@@ -58,7 +65,7 @@ class MovieCard extends StatelessWidget {
       children: <Widget>[
         RichText(
           text: TextSpan(
-            style: TextStyle(color: Colors.grey.shade800),
+            style: Theme.of(context).textTheme.bodyText2,
             text: item.overview,
           ),
         ),
