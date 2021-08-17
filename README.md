@@ -7,4 +7,4 @@ API www.themoviedb.org
 
 ** Theming **
 
-![Application themes](/blocDemo.png)
+![Application themes](assets/images/blocDemo.png)
