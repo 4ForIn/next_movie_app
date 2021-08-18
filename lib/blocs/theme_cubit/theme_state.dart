@@ -12,4 +12,13 @@ class ThemeModeState extends ThemeState {
 
   @override
   List<Object> get props => <Object>[mode];
+
+  @override
+  String toString() {
+    if (mode == AppTheme.lightMode) {
+      return 'ThemeModeState is lightMode';
+    } else {
+      return 'ThemeModeState is darkMode';
+    }
+  }
 }
