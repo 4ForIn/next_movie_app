@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:next_movie_app/blocs/movie_bloc/movie_bloc.dart';
-import 'package:next_movie_app/data/models/movie/movie.dart';
+import 'package:next_movie_app/domain/entities/movie/movie.dart';
 import 'package:next_movie_app/ui/widgets/movie_card/movie_card.dart';
 
 class SearchScreen extends StatefulWidget {

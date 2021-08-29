@@ -1,9 +1,7 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:next_movie_app/data/models/movie/movie.dart';
-import 'package:next_movie_app/data/repositories/app_repository/app_repository.dart';
+import 'package:next_movie_app/domain/entities/movie/movie.dart';
+import 'package:next_movie_app/domain/repositories/movie_repository_interface/movie_repository_interface.dart';
 import 'package:next_movie_app/utils/constants/app_strings/app_strings.dart';
 
 part 'movie_event.dart';
@@ -11,9 +9,26 @@ part 'movie_state.dart';
 
 class MovieBloc extends Bloc<MovieEvent, MovieState> {
   MovieBloc(this._movieRepository) : super(const MovieInitial());
-  final AppMovieRepository _movieRepository;
+  final MovieRepositoryInterface<Movie> _movieRepository;
 
   final List<MovieState> _prevState = <MovieState>[];
+
+  MovieState _getPreviewState() {
+    List<Movie> _prevFavoriteMovies = <Movie>[];
+    List<Movie> _prevFoundMovies = <Movie>[];
+    List<Movie> _prevPopularMovies = <Movie>[];
+    if (_prevState.whereType<MovieLoaded>().isNotEmpty) {
+      _prevFoundMovies = _prevState.whereType<MovieLoaded>().last.foundMovies;
+      _prevPopularMovies =
+          _prevState.whereType<MovieLoaded>().last.popularMovies;
+      _prevFavoriteMovies =
+          _prevState.whereType<MovieLoaded>().last.favoriteMovies;
+    }
+    return MovieLoaded(
+        favoriteMovies: _prevFavoriteMovies,
+        foundMovies: _prevFoundMovies,
+        popularMovies: _prevPopularMovies);
+  }
 
   @override
   void onTransition(Transition<MovieEvent, MovieState> transition) {
@@ -25,80 +40,49 @@ class MovieBloc extends Bloc<MovieEvent, MovieState> {
   Stream<MovieState> mapEventToState(
     MovieEvent event,
   ) async* {
+    final MovieLoaded _prevMovieLoaded = _getPreviewState() as MovieLoaded;
+
     /// app starting
     if (event is InitialEvent) {
       yield const MovieInitial();
     } else if (event is MovieLoadPopularEvent) {
-      yield* _mapLoadingPopularToState();
+      yield* _mapLoadingPopularToState(_prevMovieLoaded);
     } else if (event is MovieSearchEvent) {
-      yield* _mapMovieSearchToState(event);
+      yield* _mapMovieSearchToState(event, _prevMovieLoaded);
     } else if (event is MovieFavoriteTriggeredEvent) {
       yield* _mapFavoriteTriggerToState(event, state as MovieLoaded);
-      // have to watch if the state MovieLoaded up here is not problematic!
+      // have to watch if the state as MovieLoaded up here is not problematic!
     } else if (event is MovieLoadFavoriteEvent) {
-      final MovieLoaded state1 = state as MovieLoaded;
-      yield MovieLoaded(
-          favoriteMovies: state1.favoriteMovies,
-          foundMovies: state1.foundMovies,
-          popularMovies: state1.popularMovies);
-    } else {
-      yield const MovieError(-1, AppStrings.somethingWrong);
+      yield* _mapMovieLoadFavoriteToState(_prevMovieLoaded);
     }
   }
 
-  Stream<MovieState> _mapLoadingPopularToState() async* {
+  Stream<MovieState> _mapLoadingPopularToState(MovieLoaded prevState) async* {
     {
       yield const MovieLoadingInProgress();
       try {
-        List<Movie> _prevFoundMovies = <Movie>[];
-        List<Movie> _prevFavoriteMovies = <Movie>[];
-        if (_prevState.whereType<MovieLoaded>().isNotEmpty) {
-          _prevFoundMovies =
-              _prevState.whereType<MovieLoaded>().last.foundMovies;
-          _prevFavoriteMovies =
-              _prevState.whereType<MovieLoaded>().last.favoriteMovies;
-        }
-
         yield MovieLoaded(
-            favoriteMovies: _prevFavoriteMovies,
+            favoriteMovies: prevState.favoriteMovies,
             popularMovies: await _getMovies(),
-            foundMovies: _prevFoundMovies);
+            foundMovies: prevState.foundMovies);
       } on Exception {
         yield const MovieError(-1, AppStrings.movieLoadedError);
       }
     }
   }
 
-  Stream<MovieState> _mapMovieSearchToState(MovieSearchEvent event) async* {
+  Stream<MovieState> _mapMovieSearchToState(
+      MovieSearchEvent event, MovieLoaded prevState) async* {
     yield const MovieLoadingInProgress();
 
     try {
-      List<Movie> _prevPopularMovies = <Movie>[];
-      List<Movie> _prevFavoriteMovies = <Movie>[];
-      // pre1 = _prevState.whereType<MovieLoaded>().isNotEmpty
-
-      if (_prevState.whereType<MovieLoaded>().isNotEmpty) {
-        _prevPopularMovies =
-            _prevState.whereType<MovieLoaded>().last.popularMovies;
-        _prevFavoriteMovies =
-            _prevState.whereType<MovieLoaded>().last.favoriteMovies;
-      }
-
       yield MovieLoaded(
-          favoriteMovies: _prevFavoriteMovies,
-          popularMovies: _prevPopularMovies,
+          favoriteMovies: prevState.favoriteMovies,
+          popularMovies: prevState.popularMovies,
           foundMovies: await _searchMovie(event.input!));
     } on Exception {
       yield const MovieError(-1, AppStrings.movieLoadedError);
     }
-
-    /*try {
-      final List<Movie> _found = await _searchMovie(event.input!);
-
-      yield state.copyWith(foundMovies: _found);
-    } on Exception {
-      yield const MovieError(-1, AppStrings.movieLoadedError);
-    }*/
   }
 
   /// TO REFACTORING
@@ -107,106 +91,98 @@ class MovieBloc extends Bloc<MovieEvent, MovieState> {
       MovieFavoriteTriggeredEvent event, MovieLoaded state) async* {
     // have to watch if the state MovieLoaded up here is not problematic!
     final int idFromEvent = event.movie.id;
-    final List<Movie> _tempFavoriteList = state.favoriteMovies;
     List<Movie> _tempFoundMovies = state.foundMovies;
     List<Movie> _tempPopularMovies = state.popularMovies;
+    final List<Movie> _favoriteInDb = await _movieRepository.getAllFromDb();
 
-    // checking if movie is on the favorite list
-    final List<int> favoriteIds = state.favoriteMovies
-        .take(state.favoriteMovies.length)
-        .map((Movie e) => e.id)
-        .toList();
+    try {
+      // checking if movie is on the favorite list in DB
+      if (isMovieIdOnTheList(_moviesIds(_favoriteInDb), idFromEvent)) {
+        /// the movie already is on the favorite movies list
+        // remove the movie from the favorite movies list in database
+        _movieRepository.removeFromFavorite(event.movie); // hive DB
 
-    if (isMovieIdOnTheList(favoriteIds, idFromEvent)) {
-      /// the movie already is on the favorite movies list
+        // check if there is any movie with the id in foundMovies, popularMovies
 
-      // remove the movie from the favorite movies list
-      final List<Movie> _updatedFavorite = _tempFavoriteList
-          .where((Movie movie) => movie.id != idFromEvent)
-          .toList();
+        // check foundMovies
+        if (isMovieIdOnTheList(_moviesIds(state.foundMovies), idFromEvent)) {
+          // set isFavored field to false:
+          _tempFoundMovies = _tempFoundMovies
+              .take(_tempFoundMovies.length)
+              .map((Movie i) =>
+                  i.id == idFromEvent ? i.copyWith(isFavored: false) : i)
+              .toList();
+        }
+        // check popularMovies
+        if (isMovieIdOnTheList(_moviesIds(state.popularMovies), idFromEvent)) {
+          // set isFavored field to false:
+          _tempPopularMovies = _tempPopularMovies
+              .take(_tempPopularMovies.length)
+              .map((Movie i) =>
+                  i.id == idFromEvent ? i.copyWith(isFavored: false) : i)
+              .toList();
+        }
 
-      // check if there is any movie with the id in foundMovies, popularMovies
-      // check foundMovies
-      final List<int> _foundMoviesIds = state.foundMovies
-          .take(state.foundMovies.length)
-          .map((Movie e) => e.id)
-          .toList();
+        // emitting updated state:
+        final List<Movie> _favBox = await _movieRepository.getAllFromDb();
+        yield MovieLoaded(
+            favoriteMovies: _favBox, //_updatedFavorite
+            foundMovies: _tempFoundMovies,
+            popularMovies: _tempPopularMovies);
+      } else {
+        /// movie is not marked as favorite, so add the movie to favorites
 
-      if (isMovieIdOnTheList(_foundMoviesIds, idFromEvent)) {
-        // set isFavored field to false:
-        _tempFoundMovies = _tempFoundMovies
-            .take(_tempFoundMovies.length)
-            .map((Movie i) =>
-                i.id == idFromEvent ? i.copyWith(isFavored: false) : i)
-            .toList();
+        // change isFavorite field to true in the movie object.
+        final Movie _updatedItem = event.movie.copyWith(isFavored: true);
+
+        // add the updated movie to the favorite movies list in database
+        _movieRepository.addToFavorite(_updatedItem); // hive DB
+
+        // check if there is any movie with the id in foundMovies and popularMovies
+        // check foundMovies
+
+        // checking if movie is on the foundMovies list
+        if (isMovieIdOnTheList(_moviesIds(state.foundMovies), idFromEvent)) {
+          // set isFavored field to true:
+          _tempFoundMovies = _tempFoundMovies
+              .take(_tempFoundMovies.length)
+              .map((Movie i) =>
+                  i.id == idFromEvent ? i.copyWith(isFavored: true) : i)
+              .toList();
+        }
+        // check popularMovies
+
+        // checking if movie is on the popularMovies list
+        if (isMovieIdOnTheList(_moviesIds(state.popularMovies), idFromEvent)) {
+          // set isFavored field to true:
+          _tempPopularMovies = _tempPopularMovies
+              .take(_tempPopularMovies.length)
+              .map((Movie i) =>
+                  i.id == idFromEvent ? i.copyWith(isFavored: true) : i)
+              .toList();
+        }
+
+        // emitting updated state:
+        final List<Movie> _favBox = await _movieRepository.getAllFromDb();
+        yield MovieLoaded(
+            favoriteMovies: _favBox, // _newFavoriteList
+            foundMovies: _tempFoundMovies,
+            popularMovies: _tempPopularMovies);
       }
-      // check popularMovies
-      // checking if movie is on the popularMovies list
-      final List<int> _popularMoviesIds = state.popularMovies
-          .take(state.popularMovies.length)
-          .map((Movie e) => e.id)
-          .toList();
+    } on Exception {
+      yield const MovieError(-1, AppStrings.somethingWrong);
+    }
+  }
 
-      if (isMovieIdOnTheList(_popularMoviesIds, idFromEvent)) {
-        // set isFavored field to false:
-        _tempPopularMovies = _tempPopularMovies
-            .take(_tempPopularMovies.length)
-            .map((Movie i) =>
-                i.id == idFromEvent ? i.copyWith(isFavored: false) : i)
-            .toList();
-      }
-
-      // emitting updated state:
+  Stream<MovieState> _mapMovieLoadFavoriteToState(MovieLoaded state) async* {
+    yield const MovieLoadingInProgress();
+    try {
       yield MovieLoaded(
-          favoriteMovies: _updatedFavorite,
-          foundMovies: _tempFoundMovies,
-          popularMovies: _tempPopularMovies);
-    } else {
-      /// movie is not marked as favorite, so we will add the movie to favorites
-      // change isFavorite field to true in the movie object.
-      final Movie _updatedItem = event.movie.copyWith(isFavored: true);
-      // add the movie to the favorite movies list
-      final List<Movie> _newFavoriteList = <Movie>[
-        _updatedItem,
-        ..._tempFavoriteList
-      ];
-      // check if there is any movie with the id in foundMovies, popularMovies
-      // check foundMovies
-      // checking if movie is on the foundMovies list
-      final List<int> _foundMoviesIds = state.foundMovies
-          .take(state.foundMovies.length)
-          .map((Movie e) => e.id)
-          .toList();
-
-      if (isMovieIdOnTheList(_foundMoviesIds, idFromEvent)) {
-        // set isFavored field to false:
-        _tempFoundMovies = _tempFoundMovies
-            .take(_tempFoundMovies.length)
-            .map((Movie i) =>
-                i.id == idFromEvent ? i.copyWith(isFavored: true) : i)
-            .toList();
-      }
-      // check popularMovies
-      // checking if movie is on the popularMovies list
-      final List<int> _popularMoviesIds = state.popularMovies
-          .take(state.popularMovies.length)
-          .map((Movie e) => e.id)
-          .toList();
-
-      if (isMovieIdOnTheList(_popularMoviesIds, idFromEvent)) {
-        // set isFavored field to false:
-        _tempPopularMovies = _tempPopularMovies
-            .take(_tempPopularMovies.length)
-            .map((Movie i) =>
-                i.id == idFromEvent ? i.copyWith(isFavored: true) : i)
-            .toList();
-      }
-
-      // emitting updated state:
-      yield MovieLoaded(
-          favoriteMovies: _newFavoriteList,
-          foundMovies: _tempFoundMovies,
-          popularMovies: _tempPopularMovies);
+          favoriteMovies: await _movieRepository.getAllFromDb(),
+          foundMovies: state.foundMovies,
+          popularMovies: state.popularMovies);
+    } on Exception {
+      yield const MovieError(-1, AppStrings.somethingWrong);
     }
   }
 
@@ -225,23 +201,10 @@ class MovieBloc extends Bloc<MovieEvent, MovieState> {
     if (moviesIdsList.contains(movieId)) fav = true;
     return fav;
   }
+
+  List<int> _moviesIds(List<Movie> movies) {
+    final List<int> _ids =
+        movies.take(movies.length).map((Movie e) => e.id).toList();
+    return _ids;
+  }
 }
-
-/*
-events:
-InitialEvent
-MovieFavoriteTriggeredEvent(int)
-MovieLoadEvent(MovieType)
-MovieLoadingInProgressEvent
-MovieSearchEvent(String?)
-
-state:
-MovieInitial()
-MovieLoadingInProgress()
-MovieLoaded(List<Movie>)
-MovieLoadedError(String?)
-MovieFavoriteLoaded(List<Movie>)
-
---------
-
- */

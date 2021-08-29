@@ -35,13 +35,6 @@ class MovieLoadFavoriteEvent extends MovieEvent {
   List<Object?> get props => <dynamic>[];
 }
 
-class MovieLoadingInProgressEvent extends MovieEvent {
-  const MovieLoadingInProgressEvent();
-
-  @override
-  List<Object?> get props => <dynamic>[];
-}
-
 /// search movies by title
 class MovieSearchEvent extends MovieEvent {
   const MovieSearchEvent([this.input]);

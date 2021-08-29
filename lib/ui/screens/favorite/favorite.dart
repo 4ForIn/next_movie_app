@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:next_movie_app/blocs/movie_bloc/movie_bloc.dart';
 import 'package:next_movie_app/blocs/theme_cubit/theme_cubit.dart';
-import 'package:next_movie_app/data/models/movie/movie.dart';
+import 'package:next_movie_app/domain/entities/movie/movie.dart';
 import 'package:next_movie_app/ui/widgets/movie_card/movie_card.dart';
 import 'package:next_movie_app/utils/constants/enums/enums.dart';
 
@@ -12,6 +12,8 @@ class FavoriteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeCubit _themeCubit = BlocProvider.of<ThemeCubit>(context);
+    final MovieBloc _mBloc = BlocProvider.of<MovieBloc>(context);
+    _mBloc.add(const MovieLoadFavoriteEvent());
     return Scaffold(
       body: CustomScrollView(
         slivers: <Widget>[
@@ -106,10 +108,14 @@ class FavoriteScreen extends StatelessWidget {
       } else {
         return SliverList(
           delegate: SliverChildListDelegate(<Widget>[
-            const Text(
-              'Ups please try again from beginning',
+            Center(
+              child: Column(
+                children: const <Widget>[
+                  Text('Ups please try again from beginning'),
+                  CircularProgressIndicator(),
+                ],
+              ),
             ),
-            const CircularProgressIndicator(),
           ]),
         );
       }

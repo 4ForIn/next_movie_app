@@ -21,17 +21,19 @@ class _$MovieTearOff {
   const _$MovieTearOff();
 
   _Movie call(
-      {required String title,
-      String? posterPath,
-      required int id,
-      String? overview,
-      bool isFavored = false}) {
+      {@HiveField(0) required String title,
+      @HiveField(1) String? posterPath,
+      @HiveField(2) required int id,
+      @HiveField(3) String? overview,
+      @HiveField(4) bool isFavored = false,
+      @HiveField(5) String? photoAsString = null}) {
     return _Movie(
       title: title,
       posterPath: posterPath,
       id: id,
       overview: overview,
       isFavored: isFavored,
+      photoAsString: photoAsString,
     );
   }
 
@@ -45,11 +47,18 @@ const $Movie = _$MovieTearOff();
 
 /// @nodoc
 mixin _$Movie {
+  @HiveField(0)
   String get title => throw _privateConstructorUsedError;
+  @HiveField(1)
   String? get posterPath => throw _privateConstructorUsedError;
+  @HiveField(2)
   int get id => throw _privateConstructorUsedError;
+  @HiveField(3)
   String? get overview => throw _privateConstructorUsedError;
+  @HiveField(4)
   bool get isFavored => throw _privateConstructorUsedError;
+  @HiveField(5)
+  String? get photoAsString => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -61,11 +70,12 @@ abstract class $MovieCopyWith<$Res> {
   factory $MovieCopyWith(Movie value, $Res Function(Movie) then) =
       _$MovieCopyWithImpl<$Res>;
   $Res call(
-      {String title,
-      String? posterPath,
-      int id,
-      String? overview,
-      bool isFavored});
+      {@HiveField(0) String title,
+      @HiveField(1) String? posterPath,
+      @HiveField(2) int id,
+      @HiveField(3) String? overview,
+      @HiveField(4) bool isFavored,
+      @HiveField(5) String? photoAsString});
 }
 
 /// @nodoc
@@ -83,6 +93,7 @@ class _$MovieCopyWithImpl<$Res> implements $MovieCopyWith<$Res> {
     Object? id = freezed,
     Object? overview = freezed,
     Object? isFavored = freezed,
+    Object? photoAsString = freezed,
   }) {
     return _then(_value.copyWith(
       title: title == freezed
@@ -105,6 +116,10 @@ class _$MovieCopyWithImpl<$Res> implements $MovieCopyWith<$Res> {
           ? _value.isFavored
           : isFavored // ignore: cast_nullable_to_non_nullable
               as bool,
+      photoAsString: photoAsString == freezed
+          ? _value.photoAsString
+          : photoAsString // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -115,11 +130,12 @@ abstract class _$MovieCopyWith<$Res> implements $MovieCopyWith<$Res> {
       __$MovieCopyWithImpl<$Res>;
   @override
   $Res call(
-      {String title,
-      String? posterPath,
-      int id,
-      String? overview,
-      bool isFavored});
+      {@HiveField(0) String title,
+      @HiveField(1) String? posterPath,
+      @HiveField(2) int id,
+      @HiveField(3) String? overview,
+      @HiveField(4) bool isFavored,
+      @HiveField(5) String? photoAsString});
 }
 
 /// @nodoc
@@ -138,6 +154,7 @@ class __$MovieCopyWithImpl<$Res> extends _$MovieCopyWithImpl<$Res>
     Object? id = freezed,
     Object? overview = freezed,
     Object? isFavored = freezed,
+    Object? photoAsString = freezed,
   }) {
     return _then(_Movie(
       title: title == freezed
@@ -160,38 +177,53 @@ class __$MovieCopyWithImpl<$Res> extends _$MovieCopyWithImpl<$Res>
           ? _value.isFavored
           : isFavored // ignore: cast_nullable_to_non_nullable
               as bool,
+      photoAsString: photoAsString == freezed
+          ? _value.photoAsString
+          : photoAsString // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
+@HiveType(typeId: 1, adapterName: 'MovieAdapter')
 class _$_Movie with DiagnosticableTreeMixin implements _Movie {
   const _$_Movie(
-      {required this.title,
-      this.posterPath,
-      required this.id,
-      this.overview,
-      this.isFavored = false});
+      {@HiveField(0) required this.title,
+      @HiveField(1) this.posterPath,
+      @HiveField(2) required this.id,
+      @HiveField(3) this.overview,
+      @HiveField(4) this.isFavored = false,
+      @HiveField(5) this.photoAsString = null});
 
   factory _$_Movie.fromJson(Map<String, dynamic> json) =>
       _$_$_MovieFromJson(json);
 
   @override
+  @HiveField(0)
   final String title;
   @override
+  @HiveField(1)
   final String? posterPath;
   @override
+  @HiveField(2)
   final int id;
   @override
+  @HiveField(3)
   final String? overview;
   @JsonKey(defaultValue: false)
   @override
+  @HiveField(4)
   final bool isFavored;
+  @JsonKey(defaultValue: null)
+  @override
+  @HiveField(5)
+  final String? photoAsString;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'Movie(title: $title, posterPath: $posterPath, id: $id, overview: $overview, isFavored: $isFavored)';
+    return 'Movie(title: $title, posterPath: $posterPath, id: $id, overview: $overview, isFavored: $isFavored, photoAsString: $photoAsString)';
   }
 
   @override
@@ -203,7 +235,8 @@ class _$_Movie with DiagnosticableTreeMixin implements _Movie {
       ..add(DiagnosticsProperty('posterPath', posterPath))
       ..add(DiagnosticsProperty('id', id))
       ..add(DiagnosticsProperty('overview', overview))
-      ..add(DiagnosticsProperty('isFavored', isFavored));
+      ..add(DiagnosticsProperty('isFavored', isFavored))
+      ..add(DiagnosticsProperty('photoAsString', photoAsString));
   }
 
   @override
@@ -222,7 +255,10 @@ class _$_Movie with DiagnosticableTreeMixin implements _Movie {
                     .equals(other.overview, overview)) &&
             (identical(other.isFavored, isFavored) ||
                 const DeepCollectionEquality()
-                    .equals(other.isFavored, isFavored)));
+                    .equals(other.isFavored, isFavored)) &&
+            (identical(other.photoAsString, photoAsString) ||
+                const DeepCollectionEquality()
+                    .equals(other.photoAsString, photoAsString)));
   }
 
   @override
@@ -232,7 +268,8 @@ class _$_Movie with DiagnosticableTreeMixin implements _Movie {
       const DeepCollectionEquality().hash(posterPath) ^
       const DeepCollectionEquality().hash(id) ^
       const DeepCollectionEquality().hash(overview) ^
-      const DeepCollectionEquality().hash(isFavored);
+      const DeepCollectionEquality().hash(isFavored) ^
+      const DeepCollectionEquality().hash(photoAsString);
 
   @JsonKey(ignore: true)
   @override
@@ -247,24 +284,33 @@ class _$_Movie with DiagnosticableTreeMixin implements _Movie {
 
 abstract class _Movie implements Movie {
   const factory _Movie(
-      {required String title,
-      String? posterPath,
-      required int id,
-      String? overview,
-      bool isFavored}) = _$_Movie;
+      {@HiveField(0) required String title,
+      @HiveField(1) String? posterPath,
+      @HiveField(2) required int id,
+      @HiveField(3) String? overview,
+      @HiveField(4) bool isFavored,
+      @HiveField(5) String? photoAsString}) = _$_Movie;
 
   factory _Movie.fromJson(Map<String, dynamic> json) = _$_Movie.fromJson;
 
   @override
+  @HiveField(0)
   String get title => throw _privateConstructorUsedError;
   @override
+  @HiveField(1)
   String? get posterPath => throw _privateConstructorUsedError;
   @override
+  @HiveField(2)
   int get id => throw _privateConstructorUsedError;
   @override
+  @HiveField(3)
   String? get overview => throw _privateConstructorUsedError;
   @override
+  @HiveField(4)
   bool get isFavored => throw _privateConstructorUsedError;
+  @override
+  @HiveField(5)
+  String? get photoAsString => throw _privateConstructorUsedError;
   @override
   @JsonKey(ignore: true)
   _$MovieCopyWith<_Movie> get copyWith => throw _privateConstructorUsedError;

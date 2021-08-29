@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:next_movie_app/data/models/movie/movie.dart';
+import 'package:next_movie_app/domain/entities/movie/movie.dart';
 import 'package:next_movie_app/utils/constants/app_strings/app_strings.dart';
 
 class MovieCard extends StatelessWidget {

@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:next_movie_app/blocs/movie_bloc/movie_bloc.dart';
 import 'package:next_movie_app/blocs/theme_cubit/theme_cubit.dart';
 import 'package:next_movie_app/config/themes/app_themes.dart';
-import 'package:next_movie_app/data/models/movie/movie.dart';
+import 'package:next_movie_app/domain/entities/movie/movie.dart';
 import 'package:next_movie_app/ui/widgets/bottom_nav/bottom_nav.dart';
 import 'package:next_movie_app/ui/widgets/movies_list_view/movies_list_view.dart';
 import 'package:next_movie_app/utils/constants/enums/enums.dart';

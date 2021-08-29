@@ -58,11 +58,3 @@ class MovieError extends MovieState {
   @override
   List<Object?> get props => <dynamic>[errorCode, errorMessage];
 }
-
-/*class MovieFavoriteLoaded extends MovieState {
-  const MovieFavoriteLoaded(this.favoriteMovies);
-  final List<Movie> favoriteMovies;
-
-  @override
-  List<Object?> get props => <List<Movie>>[favoriteMovies];
-}*/

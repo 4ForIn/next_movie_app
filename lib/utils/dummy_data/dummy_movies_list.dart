@@ -1,6 +1,6 @@
-import 'package:next_movie_app/data/models/movie/movie.dart';
+import 'package:next_movie_app/domain/entities/movie/movie.dart';
 
-const List<Movie> dummyMovies = <Movie>[
+List<Movie> dummyMovies = <Movie>[
   Movie(
       title: 'Title 1',
       posterPath: '/rEm96ib0sPiZBADNKBHKBv5bve9.jpg',
@@ -13,7 +13,7 @@ const List<Movie> dummyMovies = <Movie>[
       id: -2,
       overview: 'Victoria is a young mother trying to put her dark past'),
 ];
-const List<Movie> dummyMovies1 = <Movie>[
+List<Movie> dummyMovies1 = <Movie>[
   Movie(
       title: 'movies1.isEmpty',
       posterPath: '/rEm96ib0sPiZBADNKBHKBv5bve9.jpg',

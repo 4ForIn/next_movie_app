@@ -1,16 +1,20 @@
-import 'package:next_movie_app/data/models/movie/movie.dart';
+import 'package:next_movie_app/data/providers/database/local_db_impl/local_db_impl.dart';
 import 'package:next_movie_app/data/providers/movie_api_provider/movie_api_provider.dart';
-import 'package:next_movie_app/data/repositories/app_repository/app_repository.dart';
+import 'package:next_movie_app/domain/entities/movie/movie.dart';
+import 'package:next_movie_app/domain/repositories/movie_repository_interface/movie_repository_interface.dart';
 
 /// Data Provider wrapper
-class MovieRepository implements AppMovieRepository {
-  final MovieApiProvider moviesApiProvider = MovieApiProvider();
+class MovieRepositoryImpl implements MovieRepositoryInterface<Movie> {
+  final MovieApiProvider _moviesApiProvider = MovieApiProvider();
+  final LocalDbImpl _localDb = LocalDbImpl();
+
+  // add data/providers/database/local_db_impl
 
   @override
   Future<List<Movie>> fetchMovies([String? title]) async {
     final List<Movie> _movies = <Movie>[];
     final dynamic _jsonStringFromDataProvider =
-        await moviesApiProvider.fetchRawDataFromApiAndConvertToJson(title);
+        await _moviesApiProvider.fetchRawDataFromApiAndConvertToJson(title);
 
     /// fetchRawDataFromApiAndConvertToJson() returns Map<String, dynamic>?, throws Exceptions
     if (_jsonStringFromDataProvider == null) {
@@ -58,5 +62,22 @@ class MovieRepository implements AppMovieRepository {
         _tempMovieObject.copyWith(posterPath: item['poster_path']?.toString());
 
     list.add(movieObject);
+  }
+
+  @override
+  Future<void> addToFavorite(Movie object) async {
+    _localDb.add(object);
+    print('added to DB: ${object.title}');
+  }
+
+  @override
+  Future<void> removeFromFavorite(Movie object) async {
+    _localDb.delete(object);
+    print('removed from DB: ${object.title}');
+  }
+
+  @override
+  Future<List<Movie>> getAllFromDb() async {
+    return await _localDb.getMovies();
   }
 }

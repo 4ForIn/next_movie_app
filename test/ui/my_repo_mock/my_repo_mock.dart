@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:next_movie_app/data/models/movie/movie.dart';
-import 'package:next_movie_app/data/repositories/app_repository/app_repository.dart';
+import 'package:next_movie_app/domain/entities/movie/movie.dart';
+import 'package:next_movie_app/domain/repositories/movie_repository_interface/movie_repository_interface.dart';
 
-class MyRepoMock implements AppMovieRepository {
+class MyRepoMock implements MovieRepositoryInterface {
   @override
   Future<List<Movie>> fetchMovies([String? title]) async {
-    const List<Movie> dummyMovies = <Movie>[
+    final List<Movie> dummyMovies = <Movie>[
       Movie(
           title: 'Title 1',
           posterPath: '',
@@ -23,5 +23,23 @@ class MyRepoMock implements AppMovieRepository {
     final Completer<List<Movie>> completer = Completer<List<Movie>>();
     completer.complete(dummyMovies);
     return completer.future;
+  }
+
+  @override
+  Future<void> addToFavorite(object) {
+    // TODO: implement addToFavorite
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> removeFromFavorite(object) {
+    // TODO: implement removeFromFavorite
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List> getAllFromDb() {
+    // TODO: implement getAllFromDb
+    throw UnimplementedError();
   }
 }

@@ -4,31 +4,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:next_movie_app/blocs/movie_bloc/movie_bloc.dart';
-import 'package:next_movie_app/data/models/movie/movie.dart';
-import 'package:next_movie_app/data/repositories/app_repository/app_repository.dart';
+import 'package:next_movie_app/domain/entities/movie/movie.dart';
+import 'package:next_movie_app/domain/repositories/movie_repository_interface/movie_repository_interface.dart';
 import 'package:next_movie_app/utils/dummy_data/dummy_movies_list.dart';
 
 import 'movie_bloc_test.mocks.dart';
 
 @GenerateMocks([
-  AppMovieRepository
+  MovieRepositoryInterface
 ], customMocks: [
-  MockSpec<AppMovieRepository>(
-      as: #MockAppMovieRepositoryRelaxed, returnNullOnMissingStub: true)
+  MockSpec<MovieRepositoryInterface<List<MovieState>>>(
+      as: #MovieRepositoryInterfaceRelaxed, returnNullOnMissingStub: true)
 ])
 void main() {
-  late AppMovieRepository mockRepo;
+  late MovieRepositoryInterface<Movie> mockRepo;
   late MovieBloc bloc;
 
   group('MovieBloc', () {
     setUp(() {
       EquatableConfig.stringify = true;
-      mockRepo = MockAppMovieRepository();
+      mockRepo =
+          MockMovieRepositoryInterface() as MovieRepositoryInterface<Movie>;
       bloc = MovieBloc(mockRepo);
     });
 
     // const List<Movie> emptyMovieList = <Movie>[];
-    const List<Movie> movies = dummyMovies;
+    final List<Movie> movies = dummyMovies;
 
     blocTest<MovieBloc, MovieState>(
       'emits [MovieLoadingInProgress, MovieLoaded] when MovieLoadPopularEvent is emitted',
