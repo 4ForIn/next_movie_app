@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:next_movie_app/domain/entities/movie/movie.dart';
 import 'package:next_movie_app/utils/constants/app_strings/app_strings.dart';
@@ -30,8 +31,14 @@ class MovieCard extends StatelessWidget {
                 child: Hero(
                   tag: item.id,
                   child: item.posterPath != ''
-                      ? Image.network(
-                          '$_baseUrl${item.posterPath}',
+                      ? CachedNetworkImage(
+                          imageUrl: '$_baseUrl${item.posterPath}',
+                          placeholder: (_, __) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (_, __, dynamic error) =>
+                              const Icon(Icons.error),
+                          fadeInDuration: const Duration(milliseconds: 400),
+                          fadeOutDuration: const Duration(milliseconds: 600),
                           fit: BoxFit.scaleDown,
                         )
                       : _buildNoPosterContainer(
@@ -89,3 +96,19 @@ class MovieCard extends StatelessWidget {
     );
   }
 }
+
+/*
+if (item.posterPath != null)
+              Expanded(
+                child: Hero(
+                  tag: item.id,
+                  child: item.posterPath != ''
+                      ? Image.network(
+                          '$_baseUrl${item.posterPath}',
+                          fit: BoxFit.scaleDown,
+                        )
+                      : _buildNoPosterContainer(
+                          backgroundColor: Colors.green, textColor: Colors.red),
+                ),
+              )
+ */
