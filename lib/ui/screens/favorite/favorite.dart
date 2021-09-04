@@ -127,7 +127,7 @@ class FavoriteScreen extends StatelessWidget {
     for (int i = 0; i < items.length; i++) {
       _movieView.add(MovieCard(
         item: items[i],
-        fn1: (Movie m) {
+        triggerIsFavorite: (Movie m) {
           context.read<MovieBloc>().add(MovieFavoriteTriggeredEvent(movie: m));
         },
       ));

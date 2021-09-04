@@ -1,12 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:next_movie_app/domain/entities/movie/movie.dart';
+import 'package:next_movie_app/ui/animations/favorite_icon_animation/favorite_icon_animation.dart';
 import 'package:next_movie_app/utils/constants/app_strings/app_strings.dart';
 
 class MovieCard extends StatelessWidget {
-  const MovieCard({required this.item, required this.fn1});
+  const MovieCard(
+      {Key? key, required this.item, required this.triggerIsFavorite})
+      : super(key: key);
   final Movie item;
-  final Function(Movie m) fn1;
+  final Function(Movie m) triggerIsFavorite;
 
   static const String _baseUrl = AppStrings.movieDbPosterBaseUrl;
   @override
@@ -16,10 +19,19 @@ class MovieCard extends StatelessWidget {
       collapsedTextColor:
           Theme.of(context).textTheme.bodyText1?.color ?? Colors.green,
       textColor: Theme.of(context).textTheme.bodyText1?.color ?? Colors.green,
-      leading: IconButton(
-        icon: favorite ? const Icon(Icons.star) : const Icon(Icons.star_border),
-        color: favorite ? Colors.red.shade300 : Theme.of(context).accentColor,
-        onPressed: () => fn1(item),
+      leading: FavoriteIconAnim(
+        icon: favorite
+            ? Icon(
+                Icons.star,
+                color: Colors.red.shade300,
+              )
+            : Icon(
+                Icons.star_border,
+                color: Theme.of(context).accentColor,
+              ),
+        key: Key(item.id.toString()),
+        isItemFavorite: favorite,
+        handleIsFavState: () => triggerIsFavorite(item),
       ),
       title: Container(
         height: 200.0,
@@ -96,19 +108,3 @@ class MovieCard extends StatelessWidget {
     );
   }
 }
-
-/*
-if (item.posterPath != null)
-              Expanded(
-                child: Hero(
-                  tag: item.id,
-                  child: item.posterPath != ''
-                      ? Image.network(
-                          '$_baseUrl${item.posterPath}',
-                          fit: BoxFit.scaleDown,
-                        )
-                      : _buildNoPosterContainer(
-                          backgroundColor: Colors.green, textColor: Colors.red),
-                ),
-              )
- */

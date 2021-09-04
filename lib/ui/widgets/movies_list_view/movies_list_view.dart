@@ -21,8 +21,9 @@ class MoviesListView extends StatelessWidget {
         itemCount: movieItems.length,
         itemBuilder: (BuildContext context, int index) {
           return MovieCard(
+            key: GlobalKey(debugLabel: movieItems[index].title),
             item: movieItems[index],
-            fn1: fn,
+            triggerIsFavorite: fn,
           );
         },
       ),

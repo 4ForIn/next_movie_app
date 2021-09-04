@@ -75,7 +75,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   (BuildContext context, int index) {
                     return MovieCard(
                       item: state.foundMovies[index],
-                      fn1: (Movie m) {
+                      triggerIsFavorite: (Movie m) {
                         context
                             .read<MovieBloc>()
                             .add(MovieFavoriteTriggeredEvent(movie: m));
