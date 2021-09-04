@@ -41,9 +41,10 @@ class _FavoriteIconAnimState extends State<FavoriteIconAnim>
     super.initState();
   }
 
-  void _handleOnPressed() {
+  Future<void> _handleOnPressed() async {
     if (widget.isItemFavorite) {
-      _animationCtrl.reverse();
+      _animationCtrl.reverse(from: 1);
+      await Future<void>.delayed(const Duration(milliseconds: 200));
     } else {
       _animationCtrl.forward(from: 0);
     }
