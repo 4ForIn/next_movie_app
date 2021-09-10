@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:next_movie_app/domain/entities/movie/movie.dart';
 import 'package:next_movie_app/ui/animations/favorite_icon_animation/favorite_icon_animation.dart';
 import 'package:next_movie_app/utils/constants/app_strings/app_strings.dart';
+import 'package:next_movie_app/utils/image_as_string/image_as_string.dart';
 
 class MovieCard extends StatelessWidget {
   const MovieCard(
@@ -12,15 +13,16 @@ class MovieCard extends StatelessWidget {
   final Function(Movie m) triggerIsFavorite;
 
   static const String _baseUrl = AppStrings.movieDbPosterBaseUrl;
+
   @override
   Widget build(BuildContext context) {
-    final bool favorite = item.isFavored;
+    final bool _isFavorite = item.isFavored;
     return ExpansionTile(
       collapsedTextColor:
           Theme.of(context).textTheme.bodyText1?.color ?? Colors.green,
       textColor: Theme.of(context).textTheme.bodyText1?.color ?? Colors.green,
       leading: FavoriteIconAnim(
-        icon: favorite
+        icon: _isFavorite
             ? Icon(
                 Icons.star,
                 color: Colors.red.shade300,
@@ -30,7 +32,7 @@ class MovieCard extends StatelessWidget {
                 color: Theme.of(context).accentColor,
               ),
         key: Key(item.id.toString()),
-        isItemFavorite: favorite,
+        isItemFavorite: _isFavorite,
         handleIsFavState: () => triggerIsFavorite(item),
       ),
       title: Container(
@@ -38,27 +40,13 @@ class MovieCard extends StatelessWidget {
         padding: const EdgeInsets.all(10.0),
         child: Row(
           children: <Widget>[
-            if (item.posterPath != null)
-              Expanded(
-                child: Hero(
-                  tag: item.id,
-                  child: item.posterPath != ''
-                      ? CachedNetworkImage(
-                          imageUrl: '$_baseUrl${item.posterPath}',
-                          placeholder: (_, __) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (_, __, dynamic error) =>
-                              const Icon(Icons.error),
-                          fadeInDuration: const Duration(milliseconds: 400),
-                          fadeOutDuration: const Duration(milliseconds: 600),
-                          fit: BoxFit.scaleDown,
-                        )
-                      : _buildNoPosterContainer(
-                          backgroundColor: Colors.green, textColor: Colors.red),
-                ),
-              )
-            else
-              _buildNoPosterContainer(),
+            Expanded(
+              child: Hero(
+                tag: item.id,
+                child: _buildImageFromLocalOrCachedNetwork(
+                    _isFavorite, item.posterPath, item.photoAsString),
+              ),
+            ),
             Expanded(
               child: Stack(
                 children: <Widget>[
@@ -92,19 +80,29 @@ class MovieCard extends StatelessWidget {
     );
   }
 
-  Container _buildNoPosterContainer(
-      {Color backgroundColor = Colors.black, Color textColor = Colors.white}) {
-    return Container(
-      width: 70,
-      height: 80,
-      color: backgroundColor,
-      child: const Center(
-        child: Text(
-          'No poster',
-          style: TextStyle(color: Colors.red),
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
+  Widget _buildImageFromLocalOrCachedNetwork(
+      bool isFav, String? posterPth, String? stringImg) {
+    Image? _imgDb;
+    if (isFav) {
+      _imgDb = ImageAsString.fromBase64Str(stringImg);
+    } else {
+      _imgDb = null;
+    }
+
+    if (_imgDb != null) {
+      return _imgDb;
+    } else {
+      final CachedNetworkImage _cNetImg = CachedNetworkImage(
+        imageUrl: '$_baseUrl$posterPth',
+        placeholder: (_, __) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (_, __, dynamic error) =>
+            const Center(child: Icon(Icons.error)),
+        fadeInDuration: const Duration(milliseconds: 400),
+        fadeOutDuration: const Duration(milliseconds: 600),
+        fit: BoxFit.scaleDown,
+      );
+      return _cNetImg;
+    }
   }
 }

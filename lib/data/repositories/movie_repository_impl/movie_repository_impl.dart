@@ -1,7 +1,11 @@
+import 'dart:typed_data';
+import 'dart:ui';
+
 import 'package:next_movie_app/data/providers/database/local_db_impl/local_db_impl.dart';
 import 'package:next_movie_app/data/providers/movie_api_provider/movie_api_provider.dart';
 import 'package:next_movie_app/domain/entities/movie/movie.dart';
 import 'package:next_movie_app/domain/repositories/movie_repository_interface/movie_repository_interface.dart';
+import 'package:next_movie_app/utils/image_as_string/image_as_string.dart';
 
 /// Data Provider wrapper
 class MovieRepositoryImpl implements MovieRepositoryInterface<Movie> {
@@ -66,18 +70,45 @@ class MovieRepositoryImpl implements MovieRepositoryInterface<Movie> {
 
   @override
   Future<void> addToFavorite(Movie object) async {
-    _localDb.add(object);
-    print('added to DB: ${object.title}');
+    Movie _movie = object;
+    final String? _path = _movie.posterPath;
+
+    if (_path != null) {
+      // saving poster as a String in database
+      final Uint8List? _imageAsString =
+          await _moviesApiProvider.getImageUint8ListData(_path);
+      if (_imageAsString != null) {
+        final String _data = ImageAsString.base64String(_imageAsString);
+        _movie = _movie.copyWith(photoAsString: _data);
+      }
+    }
+    _localDb.add(_movie);
   }
 
   @override
   Future<void> removeFromFavorite(Movie object) async {
     _localDb.delete(object);
-    print('removed from DB: ${object.title}');
   }
 
   @override
   Future<List<Movie>> getAllFromDb() async {
-    return await _localDb.getMovies();
+    return _localDb.getMovies();
+  }
+
+  @override
+  Future<Image?> getImgFromString(int movieId) async {
+    final String? _base64Str = await _localDb.getImgStr(movieId);
+
+    if (_base64Str != null && _base64Str.length > 4) {
+      try {
+        final Image? _img = ImageAsString.fromBase64Str(_base64Str) as Image?;
+        return _img;
+      } catch (e) {
+        print('Error when parsing String to Image: \n ${e.toString()}');
+      }
+    } else {
+      print('Error when parsing String to Image - getImgFromString() -');
+      return null;
+    }
   }
 }

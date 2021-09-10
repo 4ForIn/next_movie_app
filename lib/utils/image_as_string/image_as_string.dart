@@ -4,17 +4,21 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 class ImageAsString {
-  static Image fromBase64Str(String base64Str) {
-    return Image.memory(
-      base64Decode(base64Str),
+  // String to image:
+  static Image? fromBase64Str(String? base64Str) {
+    final String? _s = base64Str;
+    if (_s == null) {
+      return null;
+    }
+    final Image _img = Image.memory(
+      base64Decode(_s),
       fit: BoxFit.fill, //?
     );
+
+    return _img;
   }
 
-  static Uint8List dataFromBase64String(String base64Str) {
-    return base64Decode(base64Str);
-  }
-
+  // image to String:
   static String base64String(Uint8List data) {
     return base64UrlEncode(data);
   }

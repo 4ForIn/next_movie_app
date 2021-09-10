@@ -14,6 +14,12 @@ class LocalDbImpl extends LocalDbInterface {
   @override
   Future<void> add(Movie movie) async {
     // await movie.save(); // available if MovieModel extends HiveObject
+    /*final String? posterUrl = movie.posterPath;
+    if (posterUrl != null) {
+      final String _data = saveImgAsString(posterUrl);
+      print(_data.toString());
+    }*/
+    // print('0 favoriteBox() add: ${movie.photoAsString}');
     await favoriteBox().put(movie.id, movie);
   }
 
@@ -25,12 +31,30 @@ class LocalDbImpl extends LocalDbInterface {
 
   @override
   Future<Movie?> getMovie(int id) async {
-    return await favoriteBox().get(id);
+    return favoriteBox().get(id);
   }
 
   @override
   Future<List<Movie>> getMovies() async {
-    return await favoriteBox().values.toList().cast<Movie>();
+    return favoriteBox().values.toList().cast<Movie>();
+  }
+
+  @override
+  Future<String?> getImgStr(int movieId) async {
+    // returns String if Image was stored as a String (Uint8List)
+    try {
+      final Movie? _m = await getMovie(movieId);
+      if (_m != null) {
+        final String? _s = _m.photoAsString;
+        return _s;
+      } else {
+        print('0 LocalDbImpl There is no stored Movie with id: $movieId');
+        return null;
+      }
+    } catch (e) {
+      print(
+          '0 LocalDbImpl Error when read image as a String: \n ${e.toString()}');
+    }
   }
 }
 

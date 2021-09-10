@@ -1,8 +1,10 @@
 import 'dart:convert' as convert;
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
+import 'package:next_movie_app/utils/constants/app_strings/app_strings.dart';
 
 /// This is a remote data source
 class MovieApiProvider {
@@ -55,5 +57,18 @@ class MovieApiProvider {
     // if response have more then one record, movie data is stored into
     // 'results': []'
     // if response have only one record, movie data is stored into {},
+  }
+
+  // saving image as a String in database:
+  Future<Uint8List?> getImageUint8ListData(String posterPath) async {
+    const String _baseUrl = AppStrings.movieDbPosterBaseUrl;
+    final Uri _urlString = Uri.parse('$_baseUrl$posterPath');
+    try {
+      final Response _res = await _http.get(_urlString);
+      return _res.bodyBytes;
+    } on Exception {
+      print('MovieApiProvider getImageUint8ListData Exception occurred!');
+      return null;
+    }
   }
 }

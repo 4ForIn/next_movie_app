@@ -6,6 +6,8 @@ abstract class LocalDbInterface {
   Future<List<Movie>> getMovies();
   Future<void> delete(Movie movie);
   Future<void> add(Movie movie);
+  // Image was stored as a String (Uint8List)
+  Future<String?> getImgStr(int movieId);
 }
 
 /*
